@@ -1,9 +1,13 @@
-from flask import Flask, Response, render_template
+from flask import Flask, Response, render_template, send_from_directory, jsonify
+from os.path import dirname, abspath
 import cv2
+
+root_dir = abspath(dirname(__file__))
+root_dir = root_dir.replace("\\", "/")
 
 app = Flask(__name__)
 
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(1)
 
 def gen_frames():
     while True:
@@ -20,10 +24,19 @@ def gen_frames():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/vids/<name>')
+def get_video(name):
+    return send_from_directory(root_dir + "/data", name)
+
+@app.route('/logs')
+def json():
+    return send_from_directory(root_dir + "/data", "logs.json")
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="192.168.240.12")
