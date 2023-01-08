@@ -6,10 +6,9 @@ import json
 
 #Doing Json Entry of every detected face
 
-def doEntry():
-    day=datetime.datetime.now().strftime("%d-%m-%Y")
-    time=datetime.datetime.now().strftime("%H-%M-%S")
-    dicToAppend={"entry":{"date":f"{day}","time":f"{time}"}}
+def doEntry(dayAndTime):
+
+    dicToAppend={"entry":{"date":f"{dayAndTime[0]}","time":f"{dayAndTime[1]}"}}
 
     newJsonEnd=","+json.dumps(dicToAppend)[1:-1]+"}\n"
 
@@ -38,7 +37,7 @@ bodyCascade=cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fullbody.
 detection = False
 isTimerStarted=False
 noDetectionTime=None
-
+dayAndTime=[]
 #Recording module of OpenCv
 
 frameSize=(int(cap.get(3)),int(cap.get(4)))
@@ -81,15 +80,19 @@ while True:
             isTimerStarted=False
         else:
             detection=True
-            dayAndTime=datetime.datetime.now().strftime("%d-%m-%Y--%H-%M-%S")
-            doEntry()
-            videoRecord = cv2.VideoWriter(f"{dayAndTime}.mp4", videoFormat, 20, frameSize)
+            currentDay = datetime.datetime.now().strftime("%d-%m-%Y")
+            currentTime = datetime.datetime.now().strftime("%H-%M-%S")
+            dayAndTime.clear()
+            dayAndTime.append(currentDay)
+            dayAndTime.append(currentTime)
+            videoRecord = cv2.VideoWriter(f"{dayAndTime[0]}--{dayAndTime[1]}.mp4", videoFormat, 20, frameSize)
     elif detection:
         if isTimerStarted:
             if time.time()-noDetectionTime > 5:
                 detection =False
                 isTimerStarted=False
                 videoRecord.release()
+                doEntry(dayAndTime)
         else:
             isTimerStarted=True
             noDetectionTime=time.time()

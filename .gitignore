@@ -1,4 +1,6 @@
 # Pycharm files
 .idea/
 venv/
+*.json
+*.mp4
 __pycache__/
