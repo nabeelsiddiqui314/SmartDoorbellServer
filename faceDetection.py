@@ -26,7 +26,7 @@ message["Bcc"] = receiver_email  # Recommended for mass emails
 context= ssl.create_default_context()
 
 
-
+jsonIndex=1
 #Sending Email to the user
 def sendEmail():
     # Add body to email
@@ -63,9 +63,10 @@ def sendEmail():
 
 def doEntry(dayAndTime):
    # currentTime=datetime.datetime.now().strftime("%H:%M")
+    global jsonIndex
 
-    dicToAppend={"entry":{"date":f"{dayAndTime[0]}","time":f"{dayAndTime[1]}"}}
-
+    dicToAppend={f"{jsonIndex}":{"date":f"{dayAndTime[0]}","time":f"{dayAndTime[1]}"}}
+    jsonIndex +=1
     newJsonEnd=","+json.dumps(dicToAppend)[1:-1]+"}\n"
 
     with open("log.json","r+") as f:
@@ -77,9 +78,9 @@ def doEntry(dayAndTime):
             f.seek(index)
         f.seek(index)
         f.write(newJsonEnd)
-    #sendEmail()
-    sendMeEmail=threading.Thread(target=sendEmail)
-    sendMeEmail.start()
+
+    # sendMeEmail=threading.Thread(target=sendEmail)
+    # sendMeEmail.start()
 #Capturing video from webcam
 
 
@@ -148,7 +149,7 @@ while True:
             cv2.imwrite("capture.png", frame)
     elif detection:
         if isTimerStarted:
-            if time.time()-noDetectionTime > 5:
+            if time.time()-noDetectionTime > 1:
                 detection =False
                 isTimerStarted=False
                 videoRecord.release()
@@ -177,6 +178,7 @@ while True:
     #Code to quit the program with button q
 
     if cv2.waitKey(1)==ord('q'):
+        #open('log.json', 'w').close()
         break
 
 # Releasing resourses
