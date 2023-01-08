@@ -19,8 +19,12 @@ with open('data/log.json','r+') as f:
 subject = "Someone is at your door!"
 body ="Hi User, this is your smart door bell camera system. \n someone was detected at your doorbell!!\n we encourage you to check the recordings using the app!. Below is the image of the detected person:"
 sender_email = "smartdoorbell.hackrevolution@outlook.com"
-receiver_email = "osamabahamaid@gmail.com"
 password ="helloWorld123@"
+
+############################
+receiver_email = None
+#########################
+
 
 # Create a multipart message and set headers
 message = MIMEMultipart()
@@ -35,6 +39,8 @@ jsonIndex=1
 #Sending Email to the user
 def sendEmail():
     # Add body to email
+    if receiver_email == None:
+        return
     message.attach(MIMEText(body, "plain"))
 
     filename = "capture.png"  # In same directory as script
@@ -84,8 +90,8 @@ def doEntry(dayAndTime):
         f.seek(index)
         f.write(newJsonEnd)
 
-    # sendMeEmail=threading.Thread(target=sendEmail)
-    # sendMeEmail.start()
+    sendMeEmail=threading.Thread(target=sendEmail)
+    sendMeEmail.start()
 #Capturing video from webcam
 
 
