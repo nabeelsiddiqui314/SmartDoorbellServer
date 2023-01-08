@@ -10,10 +10,11 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-open('data/log.json', 'w').close()
-with open('data/log.json','r+') as f:
-    dummyDicto={"dummy":{"date": "dummyDate","time": "dummyTime"}}
-    json.dump(dummyDicto,f)
+def initilization():
+    open('data/log.json', 'w').close()
+    with open('data/log.json','r+') as f:
+        dummyDicto={"dummy":{"date": "dummyDate","time": "dummyTime"}}
+        json.dump(dummyDicto,f)
 
 
 subject = "Someone is at your door!"
@@ -112,51 +113,51 @@ dayAndTime=[]
 
 frameSize=(int(cap.get(3)),int(cap.get(4)))
 videoFormat=cv2.VideoWriter_fourcc(*"mp4v")
+def loop():
+    while True:
+        #Getting the current frame
 
-while True:
-    #Getting the current frame
+        flag,frame=cap.read()
 
-    flag,frame=cap.read()
+        #Converting to a gray image for processing
 
-    #Converting to a gray image for processing
+        grayFrame=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
-    grayFrame=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+        #Detecting faces
 
-    #Detecting faces
+        faces=faceCascade.detectMultiScale(grayFrame,1.1,5)
+        bodies=bodyCascade.detectMultiScale(grayFrame,1.1,5)
 
-    faces=faceCascade.detectMultiScale(grayFrame,1.1,5)
-    bodies=bodyCascade.detectMultiScale(grayFrame,1.1,5)
-
-    #Checking for a recognized face
+        #Checking for a recognized face
 
 
-    #Recording video when a face is detected
+        #Recording video when a face is detected
 
-    if len(faces) > 0:
-        if detection:
-            isTimerStarted=False
-
-        else:
-            detection=True
-            currentDay = datetime.datetime.now().strftime("%d-%m-%Y")
-            currentTime = datetime.datetime.now().strftime("%H-%M-%S")
-            dayAndTime.clear()
-            dayAndTime.append(currentDay)
-            dayAndTime.append(currentTime)
-            videoRecord = cv2.VideoWriter(f"data/{dayAndTime[0]}--{dayAndTime[1]}.mp4", videoFormat, 20, frameSize)
-            cv2.imwrite("capture.png", frame)
-    elif detection:
-        if isTimerStarted:
-            if time.time()-noDetectionTime > 1:
-                detection =False
+        if len(faces) > 0:
+            if detection:
                 isTimerStarted=False
-                videoRecord.release()
-                doEntry(dayAndTime)
-        else:
-            isTimerStarted=True
-            noDetectionTime=time.time()
-    if detection:
-        videoRecord.write(frame)
+
+            else:
+                detection=True
+                currentDay = datetime.datetime.now().strftime("%d-%m-%Y")
+                currentTime = datetime.datetime.now().strftime("%H-%M-%S")
+                dayAndTime.clear()
+                dayAndTime.append(currentDay)
+                dayAndTime.append(currentTime)
+                videoRecord = cv2.VideoWriter(f"data/{dayAndTime[0]}--{dayAndTime[1]}.mp4", videoFormat, 20, frameSize)
+                cv2.imwrite("capture.png", frame)
+        elif detection:
+            if isTimerStarted:
+                if time.time()-noDetectionTime > 1:
+                    detection =False
+                    isTimerStarted=False
+                    videoRecord.release()
+                    doEntry(dayAndTime)
+            else:
+                isTimerStarted=True
+                noDetectionTime=time.time()
+        if detection:
+            videoRecord.write(frame)
 
 
 
@@ -170,5 +171,4 @@ while True:
 
 # Releasing resourses
 cap.release()
-
 cv2.destroyAllWindows()
