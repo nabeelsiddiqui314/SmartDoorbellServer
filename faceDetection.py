@@ -25,6 +25,8 @@ message["Subject"] = subject
 message["Bcc"] = receiver_email  # Recommended for mass emails
 context= ssl.create_default_context()
 
+
+
 #Sending Email to the user
 def sendEmail():
     # Add body to email
@@ -75,6 +77,7 @@ def doEntry(dayAndTime):
             f.seek(index)
         f.seek(index)
         f.write(newJsonEnd)
+    #sendEmail()
     sendMeEmail=threading.Thread(target=sendEmail)
     sendMeEmail.start()
 #Capturing video from webcam
