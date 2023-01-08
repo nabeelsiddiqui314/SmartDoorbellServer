@@ -10,110 +10,110 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-def initilization():
+def main():
     open('data/log.json', 'w').close()
     with open('data/log.json','r+') as f:
         dummyDicto={"dummy":{"date": "dummyDate","time": "dummyTime"}}
         json.dump(dummyDicto,f)
 
 
-subject = "Someone is at your door!"
-body ="Hi User, this is your smart door bell camera system. \n someone was detected at your doorbell!!\n we encourage you to check the recordings using the app!. Below is the image of the detected person:"
-sender_email = "smartdoorbell.hackrevolution@outlook.com"
-password ="helloWorld123@"
+    subject = "Someone is at your door!"
+    body ="Hi User, this is your smart door bell camera system. \n someone was detected at your doorbell!!\n we encourage you to check the recordings using the app!. Below is the image of the detected person:"
+    sender_email = "smartdoorbell.hackrevolution@outlook.com"
+    password ="helloWorld123@"
 
-############################
-receiver_email = None
-#########################
-
-
-# Create a multipart message and set headers
-message = MIMEMultipart()
-message["From"] = sender_email
-message["To"] = receiver_email
-message["Subject"] = subject
-message["Bcc"] = receiver_email  # Recommended for mass emails
-context= ssl.create_default_context()
+    ############################
+    receiver_email = None
+    #########################
 
 
-jsonIndex=1
-#Sending Email to the user
-def sendEmail():
-    # Add body to email
-    if receiver_email == None:
-        return
-    message.attach(MIMEText(body, "plain"))
-
-    filename = "capture.png"  # In same directory as script
-
-    # Open PDF file in binary mode
-    with open(filename, "rb") as attachment:
-        # Add file as application/octet-stream
-        # Email client can usually download this automatically as attachment
-        part = MIMEBase("application", "octet-stream")
-        part.set_payload(attachment.read())
-
-    encoders.encode_base64(part)
-
-    part.add_header(
-        "Content-Disposition",
-        f"attachment; filename= {filename}",
-    )
-
-    message.attach(part)
-    text = message.as_string()
-
-    with smtplib.SMTP("smtp.outlook.com", 587) as server:
-        server.ehlo()
-        server.starttls(context=context)
-        server.ehlo()
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, text)
+    # Create a multipart message and set headers
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = subject
+    message["Bcc"] = receiver_email  # Recommended for mass emails
+    context= ssl.create_default_context()
 
 
-#Doing Json Entry of every detected face
+    jsonIndex=1
+    #Sending Email to the user
+    def sendEmail():
+        # Add body to email
+        if receiver_email == None:
+            return
+        message.attach(MIMEText(body, "plain"))
 
-def doEntry(dayAndTime):
-   # currentTime=datetime.datetime.now().strftime("%H:%M")
-    global jsonIndex
+        filename = "capture.png"  # In same directory as script
 
-    dicToAppend={f"{jsonIndex}":{"date":f"{dayAndTime[0]}","time":f"{dayAndTime[1]}"}}
-    jsonIndex +=1
-    newJsonEnd=","+json.dumps(dicToAppend)[1:-1]+"}\n"
+        # Open PDF file in binary mode
+        with open(filename, "rb") as attachment:
+            # Add file as application/octet-stream
+            # Email client can usually download this automatically as attachment
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
 
-    with open("data/log.json","r+") as f:
-        f.seek(0,2)
-        index=f.tell()
+        encoders.encode_base64(part)
 
-        while not f.read().startswith('}'):
-            index-=1
+        part.add_header(
+            "Content-Disposition",
+            f"attachment; filename= {filename}",
+        )
+
+        message.attach(part)
+        text = message.as_string()
+
+        with smtplib.SMTP("smtp.outlook.com", 587) as server:
+            server.ehlo()
+            server.starttls(context=context)
+            server.ehlo()
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, text)
+
+
+    #Doing Json Entry of every detected face
+
+    def doEntry(dayAndTime):
+       # currentTime=datetime.datetime.now().strftime("%H:%M")
+        global jsonIndex
+
+        dicToAppend={f"{jsonIndex}":{"date":f"{dayAndTime[0]}","time":f"{dayAndTime[1]}"}}
+        jsonIndex +=1
+        newJsonEnd=","+json.dumps(dicToAppend)[1:-1]+"}\n"
+
+        with open("data/log.json","r+") as f:
+            f.seek(0,2)
+            index=f.tell()
+
+            while not f.read().startswith('}'):
+                index-=1
+                f.seek(index)
             f.seek(index)
-        f.seek(index)
-        f.write(newJsonEnd)
+            f.write(newJsonEnd)
 
-    sendMeEmail=threading.Thread(target=sendEmail)
-    sendMeEmail.start()
-#Capturing video from webcam
+        sendMeEmail=threading.Thread(target=sendEmail)
+        sendMeEmail.start()
+    #Capturing video from webcam
 
 
-cap=cv2.VideoCapture(0)
+    cap=cv2.VideoCapture(0)
 
-#Loading the cascade classifier for detection of faces and bodies
+    #Loading the cascade classifier for detection of faces and bodies
 
-faceCascade=cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-bodyCascade=cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fullbody.xml")
+    faceCascade=cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    bodyCascade=cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fullbody.xml")
 
-#Set-up variables for recording functionality
+    #Set-up variables for recording functionality
 
-detection = False
-isTimerStarted=False
-noDetectionTime=None
-dayAndTime=[]
-#Recording module of OpenCv
+    detection = False
+    isTimerStarted=False
+    noDetectionTime=None
+    dayAndTime=[]
+    #Recording module of OpenCv
 
-frameSize=(int(cap.get(3)),int(cap.get(4)))
-videoFormat=cv2.VideoWriter_fourcc(*"mp4v")
-def loop():
+    frameSize=(int(cap.get(3)),int(cap.get(4)))
+    videoFormat=cv2.VideoWriter_fourcc(*"mp4v")
+
     while True:
         #Getting the current frame
 
@@ -160,15 +160,6 @@ def loop():
             videoRecord.write(frame)
 
 
-
-
-    # if cv2.waitKey(1)==ord('q'):
-    #     open('log.json', 'w').close()
-    #     with open('log.json','r+') as f:
-    #         dummyDicto={"dummy":{"date": "dummyDate","time": "dummyTime"}}
-    #         f.write(dummyDicto)
-
-
-# Releasing resourses
-cap.release()
-cv2.destroyAllWindows()
+    # Releasing resourses
+    cap.release()
+    cv2.destroyAllWindows()
