@@ -2,11 +2,65 @@ import cv2
 import time
 import datetime
 import json
+import threading
+
+import smtplib, ssl
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+
+subject = "Someone is at your door!"
+body ="Hi User, this is your smart door bell camera system. \n someone was detected at your doorbell!!\n we encourage you to check the recordings using the app!. Below is the image of the detected person:"
+sender_email = "smartdoorbell.hackrevolution@outlook.com"
+receiver_email = "osamabahamaid@gmail.com"
+password ="helloWorld123@"
+
+# Create a multipart message and set headers
+message = MIMEMultipart()
+message["From"] = sender_email
+message["To"] = receiver_email
+message["Subject"] = subject
+message["Bcc"] = receiver_email  # Recommended for mass emails
+context= ssl.create_default_context()
+
+#Sending Email to the user
+def sendEmail():
+    # Add body to email
+    message.attach(MIMEText(body, "plain"))
+
+    filename = "capture.png"  # In same directory as script
+
+    # Open PDF file in binary mode
+    with open(filename, "rb") as attachment:
+        # Add file as application/octet-stream
+        # Email client can usually download this automatically as attachment
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(attachment.read())
+
+    encoders.encode_base64(part)
+
+    part.add_header(
+        "Content-Disposition",
+        f"attachment; filename= {filename}",
+    )
+
+    message.attach(part)
+    text = message.as_string()
+
+    with smtplib.SMTP("smtp.outlook.com", 587) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.ehlo()
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver_email, text)
 
 
 #Doing Json Entry of every detected face
 
 def doEntry(dayAndTime):
+   # currentTime=datetime.datetime.now().strftime("%H:%M")
 
     dicToAppend={"entry":{"date":f"{dayAndTime[0]}","time":f"{dayAndTime[1]}"}}
 
@@ -21,9 +75,10 @@ def doEntry(dayAndTime):
             f.seek(index)
         f.seek(index)
         f.write(newJsonEnd)
-
-
+    sendMeEmail=threading.Thread(target=sendEmail)
+    sendMeEmail.start()
 #Capturing video from webcam
+
 
 cap=cv2.VideoCapture(0)
 
@@ -78,6 +133,7 @@ while True:
     if len(faces) > 0:
         if detection:
             isTimerStarted=False
+
         else:
             detection=True
             currentDay = datetime.datetime.now().strftime("%d-%m-%Y")
@@ -86,6 +142,7 @@ while True:
             dayAndTime.append(currentDay)
             dayAndTime.append(currentTime)
             videoRecord = cv2.VideoWriter(f"{dayAndTime[0]}--{dayAndTime[1]}.mp4", videoFormat, 20, frameSize)
+            cv2.imwrite("capture.png", frame)
     elif detection:
         if isTimerStarted:
             if time.time()-noDetectionTime > 5:
