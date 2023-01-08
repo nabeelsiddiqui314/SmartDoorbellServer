@@ -69,7 +69,7 @@ def doEntry(dayAndTime):
     jsonIndex +=1
     newJsonEnd=","+json.dumps(dicToAppend)[1:-1]+"}\n"
 
-    with open("log.json","r+") as f:
+    with open("data/log.json","r+") as f:
         f.seek(0,2)
         index=f.tell()
 
@@ -101,20 +101,7 @@ dayAndTime=[]
 
 frameSize=(int(cap.get(3)),int(cap.get(4)))
 videoFormat=cv2.VideoWriter_fourcc(*"mp4v")
-'''''
-#Face Recognition set-up
 
-path='trainImages'
-images=[]
-labels=[]
-imageNames=[]
-fileList=os.listdir(path)
-isFaceRecognized=False
-for filename in fileList:
-    img=cv2.imread(f"{path}/{filename}")
-    images.append(img)
-    imageNames.append(os.path.splitext(filename)[0])
-'''
 while True:
     #Getting the current frame
 
@@ -145,7 +132,7 @@ while True:
             dayAndTime.clear()
             dayAndTime.append(currentDay)
             dayAndTime.append(currentTime)
-            videoRecord = cv2.VideoWriter(f"{dayAndTime[0]}--{dayAndTime[1]}.mp4", videoFormat, 20, frameSize)
+            videoRecord = cv2.VideoWriter(f"data/{dayAndTime[0]}--{dayAndTime[1]}.mp4", videoFormat, 20, frameSize)
             cv2.imwrite("capture.png", frame)
     elif detection:
         if isTimerStarted:
@@ -161,27 +148,15 @@ while True:
         videoRecord.write(frame)
 
 
-    #Drawing rectangles around faces and bodies
 
-    for (x,y,width,height) in faces:
-        cv2.rectangle(frame,(x,y),(x+width,y+height),(0,255,0),3)
-        # if not isFaceRecognized:
-        #     cv2.putText(frame,"Unknown",(x,y),cv2.FONT_HERSHEY_PLAIN,1.5,(0,255,0),3)
 
-    for (x,y,width,height) in bodies:
-        cv2.rectangle(frame,(x,y),(x+width,y+height),(0,255,0),3)
+    # if cv2.waitKey(1)==ord('q'):
+    #     open('log.json', 'w').close()
+    #     with open('log.json','r+') as f:
+    #         dummyDicto={"dummy":{"date": "dummyDate","time": "dummyTime"}}
+    #         f.write(dummyDicto)
 
-    #Displaying Current image with rectangles around faces
-
-    cv2.imshow("WebCam",frame)
-
-    #Code to quit the program with button q
-
-    if cv2.waitKey(1)==ord('q'):
-        #open('log.json', 'w').close()
-        break
 
 # Releasing resourses
-
 cap.release()
 cv2.destroyAllWindows()
