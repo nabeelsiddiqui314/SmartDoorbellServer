@@ -10,6 +10,11 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+open('data/log.json', 'w').close()
+with open('data/log.json','r+') as f:
+    dummyDicto={"dummy":{"date": "dummyDate","time": "dummyTime"}}
+    json.dump(dummyDicto,f)
+
 
 subject = "Someone is at your door!"
 body ="Hi User, this is your smart door bell camera system. \n someone was detected at your doorbell!!\n we encourage you to check the recordings using the app!. Below is the image of the detected person:"
@@ -159,4 +164,5 @@ while True:
 
 # Releasing resourses
 cap.release()
+
 cv2.destroyAllWindows()
